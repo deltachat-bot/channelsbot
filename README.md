@@ -1,4 +1,4 @@
-# <img src="./logo.png" width="32px"> Channels Bot
+# <img src="https://github.com/deltachat-bot/channelsbot/raw/main/logo.png" width="32px"> Channels Bot
 
 [![Latest Release](https://img.shields.io/pypi/v/channelsbot.svg)](https://pypi.org/project/channelsbot)
 [![CI](https://github.com/deltachat-bot/channelsbot/actions/workflows/python-ci.yml/badge.svg)](https://github.com/deltachat-bot/channelsbot/actions/workflows/python-ci.yml)
