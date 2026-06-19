@@ -4,7 +4,7 @@
 [![CI](https://github.com/deltachat-bot/channelsbot/actions/workflows/python-ci.yml/badge.svg)](https://github.com/deltachat-bot/channelsbot/actions/workflows/python-ci.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Delta Chat bot that allows to create channels out of RSS/Atom feeds.
+Chatmail bot that allows to create channels out of RSS/Atom feeds.
 
 ## Install
 

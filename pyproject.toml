@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "channelsbot"
-description = "Create Delta Chat channels out RSS/Atom feeds"
+description = "Create Chatmail channels out RSS/Atom feeds"
 dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["deltachat", "bot", "feeds", "rss", "atom"]
+keywords = ["deltachat", "bot", "feeds", "rss", "atom", "chatmail"]
 authors = [
   {name = "adbenitez", email = "adb@arcanechat.me"},
 ]
