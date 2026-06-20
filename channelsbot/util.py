@@ -6,7 +6,6 @@ from tempfile import NamedTemporaryFile
 from typing import Generator
 
 import requests
-from bs4 import BeautifulSoup
 from deltachat2 import Bot
 
 www = requests.Session()
@@ -32,18 +31,6 @@ def get_channels(bot: Bot, accid: int, admin_chat: int) -> list[tuple[int, str]]
         elif chatid != admin_chat:
             bot.rpc.delete_chat(accid, chatid)
     return chats
-
-
-def get_social_image(url: str) -> str | None:
-    with www.get(url) as resp:
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-    tag = soup.find("meta", attrs={"property": "og:image"})
-    img_url = tag and tag["content"].strip()
-    if img_url and not img_url.startswith("http"):
-        img_url = None
-    return img_url
 
 
 @contextmanager

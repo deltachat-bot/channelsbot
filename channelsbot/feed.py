@@ -14,7 +14,7 @@ from feedparser import FeedParserDict
 from feedparser.datetimes import _parse_date
 from feedparser.exceptions import CharacterEncodingOverride
 
-from .util import download_image, get_channels, get_social_image, www
+from .util import download_image, get_channels, www
 
 
 def get_last_modified(fdict: FeedParserDict) -> tuple | None:
@@ -125,7 +125,7 @@ def _entry2msg(
     desc_soup = _sanitized_soup(link, msg.html)
     msg.html = str(desc_soup)
     for tag in desc_soup("br"):
-        tag.replace_with("\n")
+        tag.extract()
 
     title = entry.get("title") or ""
     if title:
@@ -147,7 +147,7 @@ def _entry2msg(
 
     if not msg.file and social_img:
         try:
-            msg.file = get_social_image(link)
+            msg.file = _get_social_image(link)
         except Exception as ex:
             print("ERROR:", ex)
 
@@ -165,9 +165,84 @@ def _entry2msg(
     return msg
 
 
+def _get_social_image(url: str) -> str | None:
+    with www.get(url) as resp:
+        resp.raise_for_status()
+        soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    tag = soup.find("meta", attrs={"property": "og:image"})
+    img_url = tag and tag["content"].strip()
+    if img_url and not img_url.startswith("http"):
+        img_url = None
+    return img_url
+
+
 def _sanitized_soup(url: str, html: str) -> bs4.BeautifulSoup:
     """Sanitize BeautifulSoup. Fix links inside the HTML."""
-    soup = bs4.BeautifulSoup(html, "html.parser")
+    NON_BREAKING_ELEMENTS = [
+        "a",
+        "abbr",
+        "acronym",
+        "audio",
+        "b",
+        "bdi",
+        "bdo",
+        "big",
+        "button",
+        "canvas",
+        "cite",
+        "code",
+        "data",
+        "datalist",
+        "del",
+        "dfn",
+        "em",
+        "embed",
+        "i",
+        "iframe",
+        "img",
+        "input",
+        "ins",
+        "kbd",
+        "label",
+        "map",
+        "mark",
+        "meter",
+        "noscript",
+        "object",
+        "output",
+        "picture",
+        "progress",
+        "q",
+        "ruby",
+        "s",
+        "samp",
+        "script",
+        "select",
+        "slot",
+        "small",
+        "span",
+        "strong",
+        "sub",
+        "sup",
+        "svg",
+        "template",
+        "textarea",
+        "time",
+        "u",
+        "tt",
+        "var",
+        "video",
+        "wbr",
+    ]
+    soup = bs4.BeautifulSoup(" ".join(html.replace("\n", " ").split()), "html.parser")
+    for element in soup(["script"]):
+        element.extract()
+    for element in soup.find_all():
+        if element.name == "br":
+            element.append("\n")
+        elif element.name not in NON_BREAKING_ELEMENTS:
+            element.append("\n\n")
 
     index = url.find("/", 8)
     if index == -1:
