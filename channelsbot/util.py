@@ -11,7 +11,7 @@ from deltachat2 import Bot
 www = requests.Session()
 www.headers.update(
     {
-        "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0"
     }
 )
 www.request = functools.partial(www.request, timeout=15)  # type: ignore
