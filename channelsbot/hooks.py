@@ -206,7 +206,7 @@ def _list(bot: Bot, accid: int, event: NewMsgEvent) -> None:
     channels = get_channels(bot, accid, admin_chat)
     reply = MsgData(text="Channels:\n\n", quoted_message_id=event.msg.id)
     ids = set()
-    for chan in channels:
+    for chan in sorted(channels, key=lambda chan: chan[0]):
         members = bot.rpc.get_chat_contacts(accid, chan[0])
         ids.update(set(members))
         reply.text += f"#{chan[0]} • {chan[1]} — {len(members):,d}👥\n\n"
