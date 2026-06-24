@@ -155,10 +155,10 @@ def _entry2msg(entry: dict, data: dict) -> MsgData:
     msg.text = msg.text.strip()
 
     if not data["html"]:
-        msg.html = None
+        msg.html = ""
 
     if not data["text"]:
-        msg.text = None
+        msg.text = ""
 
     return msg
 
@@ -169,7 +169,12 @@ def _get_social_image(url: str) -> str | None:
         soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
     tag = soup.find("meta", attrs={"property": "og:image"})
-    img_url = tag and tag["content"].strip()
+    img_url = None
+    if tag:
+        if isinstance(tag["content"], str):
+            img_url = tag["content"].strip()
+        else:
+            img_url = tag["content"][0].strip()
     if img_url and not img_url.startswith("http"):
         img_url = None
     return img_url
@@ -251,12 +256,16 @@ def _sanitized_soup(url: str, html: str) -> bs4.BeautifulSoup:
     tags = (("a", "href"), ("img", "src"), ("source", "src"), ("link", "href"))
     for tag, attr in tags:
         for element in soup(tag, attrs={attr: True}):
-            element[attr] = re.sub(
-                r"^(//.*)", rf"{root.split(':', 1)[0]}:\1", element[attr]
+            val: str = (
+                str(element[attr])
+                if isinstance(element[attr], str)
+                else element[attr][0]
             )
-            element[attr] = re.sub(r"^(/.*)", rf"{root}\1", element[attr])
-            if not re.match(r"^\w+:", element[attr]):
-                element[attr] = f"{url}/{element[attr]}"
+            val = re.sub(r"^(//.*)", rf"{root.split(':', 1)[0]}:\1", val)
+            val = re.sub(r"^(/.*)", rf"{root}\1", val)
+            if not re.match(r"^\w+:", val):
+                val = f"{url}/{val}"
+            element[attr] = val
 
     return soup
 
