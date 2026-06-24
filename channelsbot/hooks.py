@@ -111,8 +111,18 @@ def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
         text = "\n\n".join(
             (
                 "**Commands:**",
-                '/create {"url": "","name": "", "description": "", "deleteTimer": 3024000,'
-                ' "includeLink": true, "html": true, "reversed": true, "extractImg": false, "socialImg": false, "filter": ""}'
+                """/create {"url": "",
+                           "name": "",
+                           "description": "",
+                           "deleteTimer": 3024000,
+                           includeLink": true,
+                           "text": true,
+                           "html": true,
+                           "reversed": true,
+                           "extractImg": false,
+                           "socialImg": false,
+                           "filter": ""}
+                """
                 "  - create a channel, an image can be attached to use it as channel avatar",
                 "/remove ID  -  remove a channel",
                 "/update ID <JSON like on /create>  - update channel metadata, an image can be attached",
@@ -136,6 +146,7 @@ def _create(bot: Bot, accid: int, event: NewMsgEvent) -> None:
         data["deleteTimer"] = data.get("deleteTimer", 3024000)  # 5 weeks
         data["filter"] = data.get("filter", "")
         data["includeLink"] = data.get("includeLink", True)
+        data["text"] = data.get("text", True)
         data["html"] = data.get("html", True)
         data["reversed"] = data.get("reversed", True)
         data["extractImg"] = data.get("extractImg", False)

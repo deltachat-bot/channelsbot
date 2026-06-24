@@ -106,15 +106,10 @@ def get_response_text(resp: requests.Response, max_size: int) -> str:
         return content.decode(errors="replace")
 
 
-def _entry2msg(
-    name: str,
-    entry: dict,
-    include_link: bool,
-    include_html: bool,
-    extract_img: bool,
-    social_img: bool,
-) -> MsgData:
-    msg = MsgData(text="", file=_get_entry_image(entry), override_sender_name=name)
+def _entry2msg(entry: dict, data: dict) -> MsgData:
+    msg = MsgData(
+        text="", file=_get_entry_image(entry), override_sender_name=data["name"]
+    )
     link = entry.get("link", "")
 
     for c in entry.get("content", []):
@@ -136,31 +131,34 @@ def _entry2msg(
             title_soup = _sanitized_soup(link, title)
             msg.html = f"<h1><a href={link}>{title_soup}</a></h1>{msg.html}"
             title = title_soup.get_text().strip()
-            if include_html and len(title) > 250:
+            if data["html"] and len(title) > 250:
                 title = title[:250] + "..."
             msg.text += title
 
-    if not msg.file and extract_img:
+    if not msg.file and data["extractImg"]:
         msg.file = (desc_soup.img or {}).get("src")
         if msg.file and msg.file.endswith((".svg")):
             msg.file = None
 
-    if not msg.file and social_img:
+    if not msg.file and data["socialImg"]:
         try:
             msg.file = _get_social_image(link)
         except Exception as ex:
             print("ERROR:", ex)
 
     desc = desc_soup.get_text().strip()
-    if include_html and len(desc) > 250:
+    if data["html"] and len(desc) > 250:
         desc = desc[:250] + "..."
     msg.text += "\n\n" + desc
-    if include_link and link not in msg.text:
+    if data["includeLink"] and link not in msg.text:
         msg.text += "\n\n" + link
     msg.text = msg.text.strip()
 
-    if not include_html:
+    if not data["html"]:
         msg.html = None
+
+    if not data["text"]:
+        msg.text = None
 
     return msg
 
@@ -322,6 +320,11 @@ def check_feeds(
 def _check_feed_task(bot: Bot, accid: int, chatid: int, name: str):
     data = json.loads(bot.rpc.get_draft(accid, chatid).text)
     data["name"] = name
+
+    # migrations
+    data["socialImg"] = data.get("socialImg", False)
+    data["text"] = data.get("text", True)
+
     bot.logger.debug(f"[{name}] Checking feed: {data['url']}")
     try:
         _check_feed(bot, accid, chatid, data)
@@ -362,14 +365,7 @@ def send_feed_entries(
 
     msgs = []
     for entry in entries:
-        msg = _entry2msg(
-            data["name"],
-            entry,
-            data["includeLink"],
-            data["html"],
-            data["extractImg"],
-            data.get("socialImg", False),
-        )
+        msg = _entry2msg(entry, data)
         if data["filter"] not in msg.text and data["filter"] not in msg.html:
             continue
 
