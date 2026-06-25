@@ -115,7 +115,7 @@ def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
                            "name": "",
                            "description": "",
                            "deleteTimer": 3024000,
-                           includeLink": true,
+                           "includeLink": true,
                            "text": true,
                            "html": true,
                            "reversed": true,

@@ -155,10 +155,10 @@ def _entry2msg(entry: dict, data: dict) -> MsgData:
     msg.text = msg.text.strip()
 
     if not data["html"]:
-        msg.html = ""
+        msg.html = None
 
     if not data["text"]:
-        msg.text = ""
+        msg.text = None
 
     return msg
 
@@ -375,7 +375,9 @@ def send_feed_entries(
     msgs = []
     for entry in entries:
         msg = _entry2msg(entry, data)
-        if data["filter"] not in msg.text and data["filter"] not in msg.html:
+        if data["filter"] not in (msg.text or ""):
+            continue
+        if data["filter"] not in (msg.html or ""):
             continue
 
         msgs.append(msg)
