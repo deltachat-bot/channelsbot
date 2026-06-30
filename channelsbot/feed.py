@@ -26,8 +26,18 @@ def get_feed_logo(fdict: FeedParserDict) -> str | None:
 
 
 def _get_entry_image(entry: dict) -> str | None:
-    url = entry.get("media_thumbnail", [{}])[0].get("url")
-    return url or entry.get("media_content", [{}])[0].get("url")
+    max_size = 1024**2 * 20  # 20MB
+    content = entry.get("media_content", [{}])[0]
+    if content:
+        if int(content.get("filesize", "0")) <= max_size:
+            return content.get("url")
+
+    content = entry.get("media_thumbnail", [{}])[0]
+    if content:
+        if int(content.get("filesize", "0")) <= max_size:
+            return content.get("url")
+
+    return None
 
 
 def parse_feed(

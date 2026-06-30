@@ -43,15 +43,35 @@ def download_image(url: str) -> Generator[str | None, None, None]:
     """
     try:
         with www.get(url) as resp:
-            if resp.status_code < 400 or resp.status_code >= 600:
+            resp.raise_for_status()
+            if content := _get_response_content(resp, 1024**2 * 20):
                 with NamedTemporaryFile(suffix=_get_img_ext(resp)) as temp_file:
                     with open(temp_file.name, "wb") as file:
-                        file.write(resp.content)
+                        file.write(content)
                     yield temp_file.name
                     return
     except Exception:
         pass
     yield None
+
+
+def _get_response_content(resp: requests.Response, max_size: int) -> bytearray:
+    # Try to get the size from the headers
+    content_length = int(resp.headers.get("content-length", -1))
+
+    if content_length > max_size:
+        return bytearray()  # skip reading the body
+
+    # content_length might be -1/unknown or fake so check manually
+    content = bytearray()
+    total = 0
+    for chunk in resp.iter_content(chunk_size=102400):  # 100KB chunks
+        total += len(chunk)
+        if total > max_size:
+            return bytearray()  # limit exceeded, discard
+        content.extend(chunk)
+
+    return content
 
 
 def _get_img_ext(resp: requests.Response) -> str:
